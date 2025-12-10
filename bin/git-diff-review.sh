@@ -64,18 +64,34 @@ fi
 echo -e "${YELLOW}→ Creating CONTEXT directory...${NC}"
 mkdir -p "$CONTEXT_DIR"
 
-# Step 5: Copy all config files to CONTEXT
-echo -e "${YELLOW}→ Copying config files to CONTEXT...${NC}"
-if [ -d "$CONFIG_DIR" ]; then
-    for file in "$CONFIG_DIR"/*; do
+# Step 5: Copy required config files to CONTEXT
+REQUIRED_DIR="$CONFIG_DIR/required"
+OPTIONAL_DIR="$CONFIG_DIR/optional"
+
+echo -e "${YELLOW}→ Copying required config files to CONTEXT...${NC}"
+if [ -d "$REQUIRED_DIR" ]; then
+    for file in "$REQUIRED_DIR"/*; do
         if [ -f "$file" ]; then
             filename=$(basename "$file")
             cp "$file" "$CONTEXT_DIR/"
-            echo -e "  ${GREEN}✓${NC} Copied $filename"
+            echo -e "  ${GREEN}✓${NC} Copied required: $filename"
         fi
     done
 else
-    echo -e "  ${YELLOW}⚠${NC} Config directory not found: $CONFIG_DIR"
+    echo -e "  ${RED}✗${NC} Required config directory not found: $REQUIRED_DIR"
+    exit 1
+fi
+
+# Step 5b: Copy optional config files to CONTEXT
+if [ -d "$OPTIONAL_DIR" ]; then
+    echo -e "${YELLOW}→ Copying optional config files to CONTEXT...${NC}"
+    for file in "$OPTIONAL_DIR"/*; do
+        if [ -f "$file" ] && [ "$(basename "$file")" != "README.md" ]; then
+            filename=$(basename "$file")
+            cp "$file" "$CONTEXT_DIR/"
+            echo -e "  ${GREEN}✓${NC} Copied optional: $filename"
+        fi
+    done
 fi
 
 # Step 6: Generate diff
