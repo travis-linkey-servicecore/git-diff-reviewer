@@ -95,12 +95,26 @@ if [ -d "$OPTIONAL_DIR" ]; then
 fi
 
 # Step 6: Generate diff
-echo -e "${YELLOW}→ Generating diff against origin/main...${NC}"
-git diff remotes/origin/main...HEAD > "$DIFF_FILE"
+# Detect base branch (support both main and master)
+if git show-ref --verify --quiet "refs/remotes/origin/main"; then
+    BASE_REF="remotes/origin/main"
+elif git show-ref --verify --quiet "refs/remotes/origin/master"; then
+    BASE_REF="remotes/origin/master"
+elif git show-ref --verify --quiet "refs/heads/main"; then
+    BASE_REF="main"
+elif git show-ref --verify --quiet "refs/heads/master"; then
+    BASE_REF="master"
+else
+    # Fallback: try to find the default branch
+    BASE_REF=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@remotes/origin/@' || echo "remotes/origin/main")
+fi
+
+echo -e "${YELLOW}→ Generating diff against $BASE_REF...${NC}"
+git diff "$BASE_REF"...HEAD > "$DIFF_FILE"
 
 # Check if diff is empty
 if [ ! -s "$DIFF_FILE" ]; then
-    echo -e "${RED}Error: No differences found between origin/main and $BRANCH_NAME${NC}"
+    echo -e "${RED}Error: No differences found between $BASE_REF and $BRANCH_NAME${NC}"
     exit 1
 fi
 

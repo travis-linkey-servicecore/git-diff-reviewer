@@ -129,7 +129,7 @@ extract_issue_details() {
 }
 
 # Scan source files for review comments
-# Only scan files that were changed in the diff (against origin/main)
+# Only scan files that were changed in the diff (against base branch: main or master)
 file_count=0
 issue_count=0
 
@@ -137,11 +137,15 @@ issue_count=0
 cd "$WORKTREE_PATH"
 
 # Get list of changed files from git diff
-# Use origin/main as base, or main if origin/main doesn't exist
+# Detect base branch (support both main and master)
 if git show-ref --verify --quiet "refs/remotes/origin/main"; then
     BASE_REF="origin/main"
+elif git show-ref --verify --quiet "refs/remotes/origin/master"; then
+    BASE_REF="origin/master"
 elif git show-ref --verify --quiet "refs/heads/main"; then
     BASE_REF="main"
+elif git show-ref --verify --quiet "refs/heads/master"; then
+    BASE_REF="master"
 else
     # Fallback: try to find the default branch
     BASE_REF=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
