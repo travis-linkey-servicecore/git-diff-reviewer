@@ -45,8 +45,31 @@ When reviewing the upcoming diff:
    - 🟠 **Major:** impacts performance, architecture, or maintainability
    - 🟡 **Minor:** style, readability, or non-breaking logic tweak
    - 🟢 **Nitpick:** preference-level improvements
-6. **Recommend improvements** with code examples when appropriate.
-7. **Summarize overall quality**, risk level, and readiness for merge.
+6. **Categorize defects** using the defect categories table below to ensure comprehensive coverage.
+7. **Recommend improvements** with code examples when appropriate.
+8. **Summarize overall quality**, risk level, and readiness for merge.
+
+---
+
+## Defect Categories & Severity Mapping
+
+When identifying issues, categorize them using the following defect types and their typical severity levels:
+
+| Category                                        | Meaning                                                  | Very Brief Examples                                    | Typical Severity |
+| ----------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------ | ---------------- |
+| **Bugs / Functional Defects**                   | Code behaves incorrectly vs. requirements                | Off-by-one error, wrong calculation, missing edge case | 🔴 Critical / 🟠 Major / 🟡 Minor |
+| **Security Vulnerabilities**                    | Code exposes data or allows exploitation                 | SQL injection, weak authentication, XSS                | 🔴 Critical / 🟠 Major |
+| **Performance Defects**                         | Code meets requirements but is too slow / resource heavy | N+1 queries, memory leaks, inefficient loops           | 🟠 Major / 🟡 Minor |
+| **Usability / UX Defects**                      | Confusing or inaccessible behavior/UI                    | Poor keyboard navigation, unclear form error messages  | 🟡 Minor / 🟢 Nitpick |
+| **Reliability / Stability Defects**             | Code fails under stress or unexpected conditions         | Crashes on network failure, race conditions            | 🔴 Critical / 🟠 Major |
+| **Maintainability Issues (Code Smells)**        | Code works but is hard to modify later                   | God objects, duplicate code, long methods              | 🟡 Minor / 🟢 Nitpick |
+| **Compatibility / Integration Defects**         | Works in one environment but not another                 | Browser-specific issues, API version mismatch          | 🟠 Major / 🟡 Minor |
+| **Data Quality / Integrity Defects**            | Data corruption or inconsistency                         | Bad schema constraints, orphaned records               | 🔴 Critical / 🟠 Major |
+| **Localization / Internationalization Defects** | Incorrect language/region behavior                       | Date format issues, untranslated strings               | 🟡 Minor / 🟢 Nitpick |
+
+**Note:** Severity levels are context-dependent. A bug that causes data loss is Critical, while a typo in a comment is a Nitpick. Use judgment based on the actual impact of the issue.
+
+**Refactoring Suggestions:** When suggesting code refactoring (improving structure without changing behavior), add the suggestion as an inline comment directly in the source code file, placed immediately above the code that should be refactored. Include the rationale and, when helpful, a code example showing the improved approach.
 
 ---
 
@@ -56,13 +79,15 @@ When reviewing the upcoming diff:
 - **ONLY review code that appears in the diff** - do not suggest changes to code that wasn't modified
 - Focus on the changed lines and their immediate context
 - Consider how changes impact existing functionality
+- Categorize all issues using the defect categories table above
+- When suggesting refactoring, add it as an inline comment in the source code file with clear rationale
 
 ### How to Provide Feedback
 When you find an issue, use this format:
 
 **File:** `path/to/file.ts`
 
-**Issue:** 🟠 **[Severity Level] [Issue Title]**
+**Issue:** 🟠 **[Severity Level] [Defect Category] - [Issue Title]**
 
 ```typescript
 // Quote the exact code from the diff that has the issue
@@ -75,9 +100,11 @@ const problematicCode = doSomething();
 const betterCode = doSomethingBetter();
 ```
 
-**Explanation:** Explain WHY this change is needed and what problem it solves. Reference coding standards when applicable.
+**Explanation:** Explain WHY this change is needed and what problem it solves. Reference coding standards when applicable. Categorize the issue using the defect categories table (Bugs, Security, Performance, etc.).
 
-**Note:** Suggestions for fixes should be embedded directly as comments in the code files, placed immediately above the line that needs to be changed.
+**Note:** 
+- All suggestions for fixes should be embedded directly as comments in the code files, placed immediately above the line that needs to be changed.
+- **Refactoring suggestions:** When suggesting code refactoring (improving structure without changing behavior), add the suggestion as an inline comment in the source code file with a clear explanation and, when helpful, a code example showing the refactored approach.
 
 ---
 
@@ -128,23 +155,35 @@ return result.value;
 
 ### 💡 Recommendations
 
-Actionable items organized by priority:
+Actionable items organized by priority and defect category. When providing recommendations, categorize issues using the defect types defined above (Bugs, Security, Performance, etc.) and assign appropriate severity levels.
 
-#### Must Fix (Before Merge)
-- [ ] Critical issue that needs immediate attention
-- [ ] Security vulnerability that must be addressed
+#### Must Fix (Before Merge) - 🔴 Critical
+- [ ] **Bugs / Functional Defects:** Critical bugs that cause incorrect behavior, crashes, or data loss
+- [ ] **Security Vulnerabilities:** Critical security issues that expose data or allow exploitation
+- [ ] **Reliability / Stability Defects:** Critical stability issues that cause crashes or failures
+- [ ] **Data Quality / Integrity Defects:** Critical data integrity issues that could cause corruption
 
-#### Should Fix (High Priority)
-- [ ] Performance concern
-- [ ] Missing error handling
+#### Should Fix (High Priority) - 🟠 Major
+- [ ] **Bugs / Functional Defects:** Major bugs that cause incorrect behavior but don't crash
+- [ ] **Security Vulnerabilities:** Major security concerns that should be addressed
+- [ ] **Performance Defects:** Significant performance issues (N+1 queries, memory leaks, etc.)
+- [ ] **Reliability / Stability Defects:** Stability concerns that could cause issues under stress
+- [ ] **Compatibility / Integration Defects:** Issues that prevent code from working in certain environments
+- [ ] **Data Quality / Integrity Defects:** Data quality concerns that could lead to inconsistencies
 
-#### Consider (Nice to Have)
-- [ ] Code style improvement
-- [ ] Refactoring opportunity
+#### Consider (Nice to Have) - 🟡 Minor / 🟢 Nitpick
+- [ ] **Usability / UX Defects:** Minor UX improvements for better user experience
+- [ ] **Maintainability Issues (Code Smells):** Refactoring opportunities to improve code quality
+- [ ] **Performance Defects:** Minor performance optimizations
+- [ ] **Localization / Internationalization Defects:** i18n improvements
+- [ ] **Code style improvements:** Consistency and readability enhancements
+
+**Note on Refactoring:** When suggesting refactoring opportunities, add them as inline comments in the source code files with clear explanations of the improvement and, when helpful, code examples showing the refactored approach.
 
 #### Testing Suggestions
 - [ ] Missing test cases to add
 - [ ] Edge cases to validate
+- [ ] Test coverage gaps for new functionality
 
 ---
 
@@ -169,11 +208,14 @@ Actionable items organized by priority:
 
 ### Do's ✅
 - Quote specific code sections from the diff when providing feedback
+- Categorize issues using the defect categories table (Bugs, Security, Performance, etc.)
+- Assign appropriate severity levels (Critical, Major, Minor, Nitpick) based on impact
 - Explain the "why" behind each suggestion
 - Reference project coding standards when relevant
 - Provide code examples for suggested improvements
 - Be specific and actionable
 - Give positive feedback when code is done well
+- Add refactoring suggestions as inline comments in source code files with clear explanations
 
 ### Don'ts ❌
 - Don't suggest changes to code that wasn't modified in the diff
@@ -181,6 +223,7 @@ Actionable items organized by priority:
 - Don't over-format with excessive styling
 - Don't assume malicious intent
 - Don't nitpick without explaining the value of the change
+- Don't create separate review documents — all feedback goes in inline comments
 
 ### Scope Limits
 - Only review files and lines that appear in the diff
@@ -203,7 +246,7 @@ This diff adds a new `date` field to the CNR data response and fixes a bug where
 
 **Change Summary:** Added early return after processing failed stops to prevent them from appearing in ad-hoc stops.
 
-**Issue 1:** 🟢 **Good Fix - Logic Improvement**
+**Issue 1:** 🟢 **Bugs / Functional Defects - Good Fix - Logic Improvement**
 
 ```typescript
 // Added code (lines 51-52)
@@ -224,7 +267,7 @@ return;
 
 ---
 
-**Issue 2:** 🟡 **Missing Type Safety**
+**Issue 2:** 🟡 **Bugs / Functional Defects - Missing Type Safety**
 
 ```typescript
 // Line 58 (not shown in full context)
@@ -255,14 +298,14 @@ The addition of the `date` field to both the Zod schema and response object is c
 
 ### 💡 Recommendations
 
-#### Must Fix (Before Merge)
+#### Must Fix (Before Merge) - 🔴 Critical
 - None
 
-#### Should Fix (High Priority)
+#### Should Fix (High Priority) - 🟠 Major
 - None
 
-#### Consider (Nice to Have)
-- [ ] Capitalize the comment in `extract-manifests-data.ts` line 51 for style consistency
+#### Consider (Nice to Have) - 🟡 Minor / 🟢 Nitpick
+- [ ] **Maintainability Issues (Code Smells):** Capitalize the comment in `extract-manifests-data.ts` line 51 for style consistency
 
 #### Testing Suggestions
 - ✅ Test coverage is excellent - all new functionality has corresponding tests
